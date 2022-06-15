@@ -361,7 +361,7 @@ def _track_user_registration(user, profile, params, third_party_provider, regist
             'address': profile.mailing_address,
             'gender': profile.gender_display,
             'country': str(profile.country),
-            'is_marketable': params.get('marketing_emails_opt_in') == 'true'
+            'is_marketable': params.get('marketing_emails_opt_in') in ['true', '1']
         }
         if settings.MARKETING_EMAILS_OPT_IN and params.get('marketing_emails_opt_in'):
             email_subscribe = 'subscribed' if params.get('marketing_emails_opt_in') == 'true' else 'unsubscribed'
@@ -386,7 +386,7 @@ def _track_user_registration(user, profile, params, third_party_provider, regist
         }
         # VAN-738 - added below properties to experiment marketing emails opt in/out events on Braze.
         if params.get('marketing_emails_opt_in') and settings.MARKETING_EMAILS_OPT_IN:
-            properties['marketing_emails_opt_in'] = params.get('marketing_emails_opt_in') == 'true'
+            properties['marketing_emails_opt_in'] = params.get('marketing_emails_opt_in') in ['true', '1']
 
         # DENG-803: For segment events forwarded along to Hubspot, duplicate the `properties` section of
         # the event payload into the `traits` section so that they can be received. This is a temporary
