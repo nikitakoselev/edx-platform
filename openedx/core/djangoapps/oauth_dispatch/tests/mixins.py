@@ -95,8 +95,7 @@ class AccessTokenMixin:
         if should_be_restricted is not None:
             expected['is_restricted'] = should_be_restricted
 
-        if grant_type is not None:
-            expected['grant_type'] = grant_type
+        expected['grant_type'] = grant_type or ''
 
         self.assertDictContainsSubset(expected, payload)
 

@@ -6,7 +6,6 @@ import ddt
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils.timezone import now
-from oauth2_provider import models as dot_models
 
 from openedx.core.djangoapps.oauth_dispatch import jwt as jwt_api
 from openedx.core.djangoapps.oauth_dispatch.adapters import DOTAdapter
@@ -23,7 +22,7 @@ class TestCreateJWTs(AccessTokenMixin, TestCase):
         self.user = UserFactory()
         self.default_scopes = ['email', 'profile']
 
-    def _create_client(self, oauth_adapter, client_restricted, grant_type=dot_models.Application.GRANT_PASSWORD):
+    def _create_client(self, oauth_adapter, client_restricted, grant_type=''):
         """
         Creates and returns an OAuth client using the given oauth_adapter.
         Configures the client as a RestrictedApplication if client_restricted is
@@ -40,7 +39,7 @@ class TestCreateJWTs(AccessTokenMixin, TestCase):
             RestrictedApplication.objects.create(application=client)
         return client
 
-    def _get_token_dict(self, client_restricted, oauth_adapter, grant_type=dot_models.Application.GRANT_PASSWORD):
+    def _get_token_dict(self, client_restricted, oauth_adapter, grant_type=None):
         """ Creates and returns an (opaque) access token dict """
         client = self._create_client(oauth_adapter, client_restricted, grant_type=grant_type)
         expires_in = 60 * 60
@@ -168,17 +167,17 @@ class TestCreateJWTs(AccessTokenMixin, TestCase):
 
     def test_password_grant_type(self):
         oauth_adapter = DOTAdapter()
-        token_dict = self._get_token_dict(client_restricted=False, oauth_adapter=oauth_adapter)
+        token_dict = self._get_token_dict(client_restricted=False, oauth_adapter=oauth_adapter, grant_type='password')
         jwt_token_dict = jwt_api.create_jwt_token_dict(token_dict, oauth_adapter, use_asymmetric_key=False)
 
         self.assert_valid_jwt_access_token(
             jwt_token_dict["access_token"], self.user, self.default_scopes,
-            grant_type=dot_models.Application.GRANT_PASSWORD,
+            grant_type='password',
         )
 
-    def test_empty_str_grant_type(self):
+    def test_None_grant_type(self):
         oauth_adapter = DOTAdapter()
-        token_dict = self._get_token_dict(client_restricted=False, oauth_adapter=oauth_adapter, grant_type='')
+        token_dict = self._get_token_dict(client_restricted=False, oauth_adapter=oauth_adapter, grant_type=None)
         jwt_token_dict = jwt_api.create_jwt_token_dict(token_dict, oauth_adapter, use_asymmetric_key=False)
 
         self.assert_valid_jwt_access_token(
